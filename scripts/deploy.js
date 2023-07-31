@@ -5,24 +5,24 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const sampleAbi = require('../artifacts/contracts/Sample.sol/Sample.json').abi;
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const sample = await hre.ethers.deployContract("Sample");
+  await sample.waitForDeployment();
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
-
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+  const sampleContract = new hre.ethers.Contract(
+    await sample.getAddress(),
+    sampleAbi,
+    new hre.ethers.AlchemyProvider
   );
+
+  console.log('sampleContrcat', sampleContract);
+
+  const requester = await hre.ethers.deployContract("Requester");
+  const r = await requester.waitForDeployment();
+
+  await r.call(await sampleContract.getAddress());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
