@@ -7,7 +7,6 @@ import "hardhat/console.sol";
 contract Requester {
 
     function call(address sample) external {
-        console.log("address", sample, msg.sender);
         (bool s, ) = sample.call(
             abi.encodeWithSignature("attempt()")
         );

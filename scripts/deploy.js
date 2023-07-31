@@ -17,7 +17,9 @@ async function main() {
     new hre.ethers.AlchemyProvider
   );
 
-  console.log('sampleContrcat', sampleContract);
+  sampleContract.on('Winner', async (address) => {
+    console.log('Evemt: ', address);
+  });
 
   const requester = await hre.ethers.deployContract("Requester");
   const r = await requester.waitForDeployment();
