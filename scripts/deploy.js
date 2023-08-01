@@ -5,26 +5,27 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
-const sampleAbi = require('../artifacts/contracts/Sample.sol/Sample.json').abi;
 
 async function main() {
-  const sample = await hre.ethers.deployContract("Sample");
-  await sample.waitForDeployment();
+  // Get configs
+  const networkUrl = process.env.REACT_APP_NETWORK_URL;
+  const privateKey = process.env.REACT_APP_PRIVATE_KEY;
+  const targetContractAddress = '0xcF469d3BEB3Fc24cEe979eFf83BE33ed50988502';
 
-  const sampleContract = new hre.ethers.Contract(
-    await sample.getAddress(),
-    sampleAbi,
-    new hre.ethers.AlchemyProvider
-  );
+  // Inits provider & wallet
+  const provider = new hre.ethers.JsonRpcProvider(networkUrl);
+  const wallet = new hre.ethers.Wallet(privateKey, provider);
 
-  sampleContract.on('Winner', async (address) => {
-    console.log('Evemt: ', address);
-  });
+  // Deploy Requester Contract
+  const requesterArtifacts = await hre.artifacts.readArtifact('Requester');
+  const requesterFactory = new hre.ethers.ContractFactory(requesterArtifacts.abi, requesterArtifacts.bytecode, wallet);
+  const requesterContract = await requesterFactory.deploy();
+  const requestContractAddress = await requesterContract.getAddress();
 
-  const requester = await hre.ethers.deployContract("Requester");
-  const r = await requester.waitForDeployment();
-
-  await r.call(await sampleContract.getAddress());
+  console.log('requesterContractAddress', requestContractAddress);
+  
+  // call target contract contract from another contract (Requester)
+  await requesterContract.call(targetContractAddress);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

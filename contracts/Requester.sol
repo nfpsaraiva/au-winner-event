@@ -5,7 +5,6 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 
 contract Requester {
-
     function call(address sample) external {
         (bool s, ) = sample.call(
             abi.encodeWithSignature("attempt()")
